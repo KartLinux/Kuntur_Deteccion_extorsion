@@ -6,4 +6,7 @@ sealed class NavScreens(val route: String) {
     object SpeechToTextPage : NavScreens("SpeechToTextPage")
     object TextToSpeechPage : NavScreens("TextToSpeechPage")
     object FileListPage : NavScreens("FileListPage")
+    object HistoryPage      : NavScreens("history")   // ← historial de grabaciones
+    object ContactsPage     : NavScreens("contacts")  // ← lista de contactos
+    object MapPage          : NavScreens("map")       // ← vista de mapa
 }

@@ -1,292 +1,235 @@
 package com.denicks21.speechandtext.screen
 
-import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.ShieldMoon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavHostController
 import com.denicks21.speechandtext.R
-import com.denicks21.speechandtext.navigation.NavScreens
-import com.denicks21.speechandtext.ui.composables.BackPress
-import com.denicks21.speechandtext.ui.theme.DarkGrey
-import com.denicks21.speechandtext.ui.theme.DarkText
-import com.denicks21.speechandtext.ui.theme.DarkYellow
-import com.denicks21.speechandtext.ui.theme.LightText
-import com.denicks21.speechandtext.ui.theme.LightYellow
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+// -----------------------
+// Constantes de configuración
+// -----------------------
+private const val MAIN_CARD_ALPHA = 0.3f            // Transparencia de la tarjeta principal
+private const val METRIC_CARD_ALPHA = 0.3f          // Transparencia de las tarjetas de métrica
+
+private val MAIN_CARD_CORNER = 16.dp                // Radio de esquina de la tarjeta principal
+private val METRIC_CARD_CORNER = 12.dp              // Radio de esquina de las métricas
+
+private val MAIN_CARD_HEIGHT = 200.dp               // Altura de la tarjeta principal
+private val METRIC_CARD_HEIGHT = 100.dp             // Altura de cada tarjeta de métrica
+
+private val LOCATION_ICON_SIZE = 20.dp              // Tamaño del icono de ubicación
+private val LOCATION_SPACING = 8.dp                 // Espacio entre icono y texto
+
+// Función que devuelve una ubicación de prueba
+private fun getFakeLocation(): String = "Quito, Ecuador"
+
 @Composable
-fun HomePage(navController: NavHostController) {
-    var showInfoDialog by remember { mutableStateOf(false) }
-
-    BackPress(onBackPressed = {})
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.Top
-        ) {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.app_name),
-                        color = if (isSystemInDarkTheme()) DarkText else LightText
+fun HomePage(
+    speechInput:       String,
+    isListening:       Boolean,
+    onToggleListening: () -> Unit
+) {
+    // Fondo degradado horizontal
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(
+                        MaterialTheme.colors.primary,
+                        MaterialTheme.colors.primaryVariant
                     )
-                },
-                actions = {
-                    IconButton(
-                        onClick = { showInfoDialog = true }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = "Info icon",
-                            tint = if (isSystemInDarkTheme()) DarkText else LightText
-                        )
-                    }
-                },
-                backgroundColor = if (isSystemInDarkTheme()) LightYellow else DarkGrey
+                )
             )
-        }
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Card(
-                    modifier = Modifier
-                        .clickable { navController.navigate(NavScreens.SpeechToTextPage.route) }
-                        .width(280.dp)
-                        .height(120.dp),
-                    shape = RoundedCornerShape(25.dp),
-                    backgroundColor = if (isSystemInDarkTheme()) LightYellow else DarkGrey,
-                    elevation = 4.dp
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 30.dp),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.stt),
-                            contentDescription = "Speech to Text image",
-                            modifier = Modifier.size(70.dp),
-                            colorFilter = ColorFilter.tint(if (isSystemInDarkTheme()) DarkGrey else DarkYellow)
-                        )
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Speech",
-                                color = if (isSystemInDarkTheme()) DarkGrey else LightYellow,
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
-                            )
-                            Icon(
-                                imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = "Arrow icon",
-                                tint = if (isSystemInDarkTheme()) DarkGrey else LightYellow,
-                            )
-                            Text(
-                                text = "Text",
-                                color = if (isSystemInDarkTheme()) DarkGrey else LightYellow,
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(30.dp))
-                Card(
-                    modifier = Modifier
-                        .clickable { navController.navigate(NavScreens.TextToSpeechPage.route) }
-                        .width(280.dp)
-                        .height(120.dp),
-                    shape = RoundedCornerShape(25.dp),
-                    backgroundColor = if (isSystemInDarkTheme()) LightYellow else DarkGrey,
-                    elevation = 4.dp
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 30.dp),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.tts),
-                            contentDescription = "Text to Speech image",
-                            modifier = Modifier.size(70.dp),
-                            colorFilter = ColorFilter.tint(if (isSystemInDarkTheme()) DarkGrey else DarkYellow)
-                        )
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Text",
-                                color = if (isSystemInDarkTheme()) DarkGrey else LightYellow,
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
-                            )
-                            Icon(
-                                imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = "Arrow icon",
-                                tint = if (isSystemInDarkTheme()) DarkGrey else LightYellow,
-                            )
-                            Text(
-                                text = "Speech",
-                                color = if (isSystemInDarkTheme()) DarkGrey else LightYellow,
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-    if (showInfoDialog) {
-        val uriHandler = LocalUriHandler.current
-
-        Dialog(
-            onDismissRequest = { showInfoDialog = false }
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier            = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Ubicación con icono
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier          = Modifier.padding(bottom = 16.dp)
+            ) {
+                Icon(
+                    painter            = painterResource(id = R.drawable.ic_ubication),
+                    contentDescription = "Ubicación",
+                    tint               = MaterialTheme.colors.onPrimary,
+                    modifier           = Modifier.size(LOCATION_ICON_SIZE)
+                )
+                Spacer(modifier = Modifier.width(LOCATION_SPACING))
+                Text(
+                    text  = getFakeLocation(),
+                    style = MaterialTheme.typography.subtitle2,
+                    color = MaterialTheme.colors.onPrimary
+                )
+            }
+
+            // ——— Tarjeta principal de estado ———
+            // …
+
             Card(
                 modifier = Modifier
-                    .wrapContentHeight()
-                    .height(470.dp)
-                    .width(450.dp),
-                shape = RoundedCornerShape(size = 8.dp),
-                backgroundColor = MaterialTheme.colors.background
+                    .fillMaxWidth()
+                    .height(MAIN_CARD_HEIGHT)
+                    .clip(RoundedCornerShape(MAIN_CARD_CORNER)),
+                shape           = RoundedCornerShape(MAIN_CARD_CORNER),
+                backgroundColor = MaterialTheme.colors.surface.copy(alpha = MAIN_CARD_ALPHA),
+                elevation       = 0.dp
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    IconButton(
-                        onClick = { showInfoDialog = false },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = "Close dialog",
-                            tint = if (isSystemInDarkTheme()) DarkText else LightText
-                        )
-                    }
-                    Card(
-                        modifier = Modifier
-                            .height(400.dp)
-                            .width(450.dp)
-                            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        backgroundColor = MaterialTheme.colors.onBackground,
-                        elevation = 10.dp
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(10.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = stringResource(id = R.string.app_name),
-                                color = if (isSystemInDarkTheme()) LightText else DarkText,
-                                fontSize = 30.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Image(
-                                painter = painterResource(id = R.drawable.logo),
-                                contentDescription = "Logo",
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .border(
-                                        width = 1.dp,
-                                        color = if (isSystemInDarkTheme()) LightText else DarkText,
-                                        shape = CircleShape
-                                    )
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Divider(
-                                color = if (isSystemInDarkTheme()) LightText else DarkText,
-                                thickness = 1.dp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = (
-                                        "Android application built with Kotlin and Jetpack Compose " +
-                                                "that shows how to use the Speech-to-Text & " +
-                                                "Text-to-Speech functions"
-                                        ),
-                                color = if (isSystemInDarkTheme()) LightText else DarkText,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Divider(
-                                color = if (isSystemInDarkTheme()) LightText else DarkText,
-                                thickness = 1.dp
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = "My GitHub",
-                                color = if (isSystemInDarkTheme()) LightText else DarkText,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 24.sp
-                            )
-                            Spacer(modifier = Modifier.height(5.dp))
-                            IconButton(
-                                onClick = { uriHandler.openUri("https://github.com/ndenicolais") },
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.github_logo),
-                                    contentDescription = "Github image",
-                                    colorFilter = ColorFilter.tint(if (isSystemInDarkTheme()) LightText else DarkText)
-                                )
-                            }
-                        }
-                    }
-                }
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp),
-                    verticalArrangement = Arrangement.Bottom,
+                    modifier            = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "Developed by DeNicks21",
-                        color = if (isSystemInDarkTheme()) DarkText else LightText,
-                        fontSize = 14.sp
+                    // Aquí cambiamos el icono por tus drawables ic_kuntur_on / ic_kuntur_off:
+                    Icon(
+                        painter           = painterResource(
+                            id = if (isListening)
+                                R.drawable.ic_kuntur_on
+                            else
+                                R.drawable.ic_kuntur_off
+                        ),
+                        contentDescription = null,
+                        modifier           = Modifier.size(64.dp),
+                        tint               = Color.Unspecified    // preserva los colores originales del drawable
                     )
+
+                    Text(
+                        text  = if (isListening) "Kuntur a la escucha" else "Kuntur apagado",
+                        style = MaterialTheme.typography.h6,
+                        color = MaterialTheme.colors.onSurface
+                    )
+                    Button(
+                        onClick = onToggleListening,
+                        shape   = RoundedCornerShape(50),
+                        colors  = ButtonDefaults.buttonColors(
+                            backgroundColor = MaterialTheme.colors.secondary,
+                            contentColor    = MaterialTheme.colors.onSecondary
+                        )
+                    ) {
+                        Text(
+                            text  = if (isListening) "Apagar Kuntur" else "Activar Kuntur",
+                            style = MaterialTheme.typography.button
+                        )
+                    }
                 }
             }
+
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Texto transcrito en tiempo real
+            Text(
+                text     = if (speechInput.isNotBlank()) speechInput else "Aquí aparecerá tu texto...",
+                style    = MaterialTheme.typography.body1,
+                color    = MaterialTheme.colors.onSurface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            )
+        }
+
+        // ——— Métricas inferiores ———
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            MetricCard(
+                modifier   = Modifier
+                    .weight(1f)
+                    .height(METRIC_CARD_HEIGHT)
+                    .clip(RoundedCornerShape(METRIC_CARD_CORNER)),
+                icon       = Icons.Default.Notifications,
+                label      = "Última alerta",
+                value      = "21:39",
+                cardAlpha  = METRIC_CARD_ALPHA,
+                cornerSize = METRIC_CARD_CORNER,
+                elevation  = 0.dp
+            )
+            MetricCard(
+                modifier   = Modifier
+                    .weight(1f)
+                    .height(METRIC_CARD_HEIGHT)
+                    .clip(RoundedCornerShape(METRIC_CARD_CORNER)),
+                icon       = Icons.Default.BarChart,
+                label      = "Incidencias",
+                value      = "20",
+                cardAlpha  = METRIC_CARD_ALPHA,
+                cornerSize = METRIC_CARD_CORNER,
+                elevation  = 0.dp
+            )
         }
     }
 }
+
+@Composable
+private fun MetricCard(
+    modifier:    Modifier = Modifier,
+    icon:        androidx.compose.ui.graphics.vector.ImageVector,
+    label:       String,
+    value:       String,
+    cardAlpha:   Float,
+    cornerSize:  Dp,
+    elevation:   Dp
+) {
+    Card(
+        modifier        = modifier,
+        shape           = RoundedCornerShape(cornerSize),
+        backgroundColor = MaterialTheme.colors.surface.copy(alpha = cardAlpha),
+        elevation       = elevation
+    ) {
+        Column(
+            modifier            = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector        = icon,
+                contentDescription = null,
+                tint               = MaterialTheme.colors.onSurface
+            )
+            Text(
+                text  = label,
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onSurface
+            )
+            Text(
+                text  = value,
+                style = MaterialTheme.typography.subtitle1,
+                color = MaterialTheme.colors.onSurface
+            )
+        }
+    }
+}
+
+
+

@@ -1,85 +1,161 @@
 package com.denicks21.speechandtext
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Context
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.runtime.SideEffect
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.rememberNavController
 import com.denicks21.speechandtext.navigation.NavGraph
 import com.denicks21.speechandtext.ui.theme.SpeechAndTextTheme
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import java.util.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileOutputStream
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
-    var speechInput = mutableStateOf("")
 
-    @OptIn(ExperimentalAnimationApi::class)
-    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+    // Estado compartido con Compose
+    val speechInput = mutableStateOf("")
+    val listening   = mutableStateOf(false)
+
+    private lateinit var speechRecognizer: SpeechRecognizer
+    private lateinit var recognizerIntent: Intent
+
+    // Lanzador para pedir permiso de micrófono
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (!granted) {
+                Toast.makeText(this, "Permiso de micrófono denegado", Toast.LENGTH_LONG).show()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Pedir permiso si no está concedido
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+
+        setupSpeechRecognizer()
+
         setContent {
             SpeechAndTextTheme {
-                val navController = rememberAnimatedNavController()
-                val systemUiController = rememberSystemUiController()
-                val statusBarColor = MaterialTheme.colors.surface
-                val navigationBarColor = MaterialTheme.colors.onSurface
-                val barIcons = isSystemInDarkTheme()
+                val navController = rememberNavController()
+                NavGraph(
+                    navController     = navController,
+                    speechInputState  = speechInput,
+                    listeningState    = listening,
+                    startListening    = { startListening() },
+                    stopListening     = { stopListening() }
+                )
+            }
+        }
 
-                SideEffect {
-                    systemUiController.setNavigationBarColor(
-                        color = navigationBarColor,
-                        darkIcons = barIcons
-                    )
-                    systemUiController.setStatusBarColor(
-                        color = statusBarColor,
-                        darkIcons = true
-                    )
-                }
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.surface
-                ) {
-                    NavGraph(navController)
+        // Auto-guardado cada 3 segundos
+        lifecycleScope.launch {
+            while (isActive) {
+                delay(3_000L)
+                if (listening.value && speechInput.value.isNotBlank()) {
+                    val ts = System.currentTimeMillis()
+                    writeFile("speech_$ts.txt", speechInput.value)
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.toast_auto_saved),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
     }
 
-    fun askSpeechInput(context: Context) {
-        if (!SpeechRecognizer.isRecognitionAvailable(context)) {
-            Toast.makeText(context, "Speech not Available", Toast.LENGTH_SHORT).show()
-        } else {
-            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-            intent.putExtra(
+    private fun setupSpeechRecognizer() {
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
+            setRecognitionListener(object : RecognitionListener {
+                override fun onReadyForSpeech(params: Bundle?) {}
+                override fun onBeginningOfSpeech() {}
+                override fun onRmsChanged(rmsdB: Float) {}
+                override fun onBufferReceived(buffer: ByteArray?) {}
+
+                override fun onPartialResults(partial: Bundle?) {
+                    partial
+                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull()
+                        ?.let { hypothesis ->
+                            speechInput.value = hypothesis
+                        }
+                }
+
+                override fun onResults(results: Bundle?) {
+                    results
+                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull()
+                        ?.let { hypothesis ->
+                            val prev = speechInput.value.trim()
+                            speechInput.value =
+                                if (prev.isNotEmpty()) "$prev $hypothesis" else hypothesis
+                        }
+                    if (listening.value) startListening()
+                }
+
+                override fun onEndOfSpeech() {
+                    if (listening.value) startListening()
+                }
+
+                override fun onError(error: Int) {
+                    if (listening.value) startListening()
+                }
+
+                override fun onEvent(eventType: Int, params: Bundle?) {}
+            })
+        }
+
+        recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(
                 RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
             )
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Talk")
-            startActivityForResult(intent, 102)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
+    fun startListening() {
+        listening.value = true
+        speechRecognizer.startListening(recognizerIntent)
+    }
 
-        if (requestCode == 102 && resultCode == Activity.RESULT_OK) {
-            val result = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-            speechInput.value = result?.get(0).toString()
-        }
+    fun stopListening() {
+        listening.value = false
+        speechRecognizer.stopListening()
+    }
+
+    fun writeFile(fileName: String, text: String) {
+        val dir = File(getExternalFilesDir("SpeechAndText"), "")
+        if (!dir.exists()) dir.mkdirs()
+        val file = File(dir, fileName)
+        BufferedWriter(FileOutputStream(file).bufferedWriter()).use { it.write(text) }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        speechRecognizer.destroy()
     }
 }
+
+

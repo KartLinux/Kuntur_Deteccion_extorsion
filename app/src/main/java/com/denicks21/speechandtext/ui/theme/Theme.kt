@@ -5,48 +5,47 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
+// Paleta de colores para modo oscuro
 private val DarkColorPalette = darkColors(
-    primary = LightYellow,
-    primaryVariant = LightYellow,
-    secondary = LightGrey,
-    background = LightYellow,
-    surface = DarkSurface,
-    onPrimary = DarkGrey,
-    onSecondary = LightYellow,
-    onBackground = DarkGrey,
-    onSurface = LightYellow,
-    error = Refuse
+    primary         = GradientStart,    // color principal (botones, iconos activos…)
+    primaryVariant  = GradientEnd,      // variante para estados presionados
+    secondary       = LightGrey,        // color secundario (acentos, iconos secundarios)
+    background      = GradientStart,    // fondo general
+    surface         = DarkSurface,      // fondo de cards, diálogos…
+    onPrimary       = Color.White,      // texto/icono sobre primary
+    onSecondary     = Color.White,      // texto/icono sobre secondary
+    onBackground    = Color.White,      // texto sobre background
+    onSurface       = LightText,        // texto sobre surface
+    error           = ErrorColor        // mensajes de error
 )
 
+// Paleta de colores para modo claro
 private val LightColorPalette = lightColors(
-    primary = DarkGrey,
+    primary        = DarkGrey,
     primaryVariant = DarkGrey,
-    secondary = DarkYellow,
-    background = DarkGrey,
-    surface = LightSurface,
-    onPrimary = LightYellow,
-    onSecondary = DarkGrey,
-    onBackground = LightYellow,
-    onSurface = DarkGrey,
-    error = Refuse
+    secondary      = DarkYellow,
+    background     = DarkGrey,
+    surface        = LightSurface,
+    onPrimary      = LightYellow,  // mismo onPrimary
+    onSecondary    = DarkGrey,
+    onBackground   = LightYellow,  // fijarse que onBackground = onPrimary
+    onSurface      = DarkGrey,
+    error          = ErrorColor // mensajes de error
 )
 
 @Composable
 fun SpeechAndTextTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content:    @Composable () -> Unit
 ) {
-    val colors = if (darkTheme) {
-        DarkColorPalette
-    } else {
-        LightColorPalette
-    }
+    val colors = if (darkTheme) DarkColorPalette else LightColorPalette
 
     MaterialTheme(
-        colors = colors,
+        colors     = colors,
         typography = Typography,
-        shapes = Shapes,
-        content = content
+        shapes     = Shapes,
+        content    = content
     )
 }
