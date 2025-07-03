@@ -1,91 +1,85 @@
+```markdown
 # SpeechAndText
-> <b>Author: Nicola De Nicolais</b>
 
-## 📄 Description
-Android application built with Kotlin and Jetpack Compose that shows how to use the functions:<br/>
+Una aplicación Android de demostración construida con Jetpack Compose que permite:
 
-#### Speech-to-Text (STT)
-About this, Android provides an Intent based API which launches Google's Speech Recognition service and returns back the text result to you. There is a catch though - the device will require Google Search app for the service to work.<br>
-In the app this function allows the user to:
-- Capture voice input from the device’s microphone.
-- Convert the input captured by the microphone and show it as text on the display.
-- Save the displayed text in a text file with extension .txt.
-- View saved files and read them.
+- 🎙️ **Reconocimiento de voz** (Speech-to-Text) en tiempo real.  
+- 🔊 **Síntesis de voz** (Text-to-Speech) para leer texto en voz alta.  
+- 🌈 **Theming personalizado** con paleta clara/oscura y degradados.  
+- 📱 **Navegación** mediante una barra inferior con iconos propios y highlight circular.  
+- 🛡️ **Estado de “Kuntur”** on/off con iconos `ic_kuntur_on` / `ic_kuntur_off`.  
 
-#### Text-to-Speech (TTS)
-About this, the Text-to-speech API, unlike Speech Recognition, is available without Google Services, and can be found in android.speech.tts package.<br/>
-In the app this function allows the user to:
-- Insert an input keyboard text inside the box displayed on the display.
-- Import a saved text file.
-- Set the tone of the voice that reads the entered text.
-- Set the speed of the voice that reads the entered text.
-- Listen to the text inserted through the speaker of the device.
+---
 
-## 🔨  How to install and run the project
-Clone this repository :<br/>
-`
-git clone https://github.com/ndenicolais/SpeechAndText.git
-`
-
-Import the project into Android Studio :
-
-1. File -> New -> Import Project
-2. Browse to <path_to_project>
-3. Click "OK"
-
-Create a new virtual device or connect an Android device to your computer.</br>
-Click Run to start the project on the selected device.
-
-## 🛠️ Built with
-Kotlin</br>
-Jetpack Compose</br>
-Navigation
-
-## ✏️ Customization
-You can custom some aspects of app:
-#### Save folder
-Change the path  where the text of Speech-to-Text file will be saved.
-If you want you can also avoid creating a folder in which to save files but let them be saved directly in the default folder
-
-#### Language
-Change the value of *txtToSpeech.language* to set your prefered language according the available languages listed in this doc:
-https://docs.oracle.com/javase/7/docs/api/java/util/Locale.html
-
-#### Pitch rate
-Change the value of *pitch's Slider* of Text-to-Speech to change how fast your device reads aloud.
-
-#### Speech rate
-Change the value of *speechRate's Slider* of Text-to-Speech to alter the tone of the spoken voice.
-
-## 📚 Package Structure
+## 📂 Estructura del proyecto
 
 ```
-com.denicks21.speechandtext     # Root Package
-|
-├── navigation                  # NAVIGATION FOLDER
-│   ├── NavGraph                # Contains all of app destinations and actions.
-│   └── NavScreens              # Contains a sealed class with object corresponds to a screen and its routes.
-|
-├── screen                      # SCREEN FOLDER
-|   │   ├── FileListPage        # Page containing saved text file list.
-|   │   ├── HomePage            # Main page of the app.
-|   │   ├── IntroPage           # Splashscreen of the app.
-|   │   ├── SpeechToTextPage    # Page with the function Speech to Text.
-|   │   ├── TextToSpeechPage    # Page with the function Text to Speech.
-│
-├── ui                          # UI  FOLDER
-│   ├── composables             # Composable components
-|   │   ├── BackPress           # Component that control and prevent back button action.
-|
-├── theme                       # THEME FOLDER
-|   │   ├── Color               # Color palette used by the app.
-|   │   ├── Shape               # Components shapes of Compose used by the app.
-|   │   ├── Theme               # Theme used by the app.
-|   │   ├── Type                # Typography styles for the fonts used by the app.
-|
-├── MainActivity                # Main activity
+app/
+├── src/main/
+│   ├── java/com/denicks21/speechandtext/
+│   │   ├── MainActivity.kt
+│   │   ├── navigation/
+│   │   │   ├── NavGraph.kt
+│   │   │   └── NavScreens.kt
+│   │   ├── screen/
+│   │   │   ├── HomePage.kt
+│   │   │   ├── SpeechToTextPage.kt
+│   │   │   └── TextToSpeechPage.kt
+│   │   └── ui/
+│   │       ├── composables/
+│   │       │   └── AppBottomBar.kt
+│   │       └── theme/
+│   │           ├── Color.kt
+│   │           └── Theme.kt
+│   └── res/
+│       ├── drawable/       ← íconos y vectores (incluye ic_ubication, ic_kuntur_on/off…)
+│       └── values/         ← colors.xml, themes.xml…
+└── build.gradle
 ```
 
-## 📎 Screenshots
-<p float="left">
-<img height="500em" src="images/screen.png" title="SpeechToText's screen preview">
+---
+
+## 🚀 Tecnologías
+
+- Kotlin  
+- Jetpack Compose  
+- Navigation Compose  
+- Material Theme con Light/Dark  
+- Recursos vectoriales en `res/drawable`
+
+---
+
+## 📥 Instalación
+
+1. Clona este repositorio:  
+   ```bash
+   git clone https://github.com/tu-usuario/SpeechAndText.git
+   ```
+2. Abre en Android Studio.<br>
+3. Sync Gradle y ejecuta en un emulador o dispositivo.
+
+---
+
+## 🛠️ Uso básico
+
+- En la pantalla principal:
+  1. Pulsa **Activar Kuntur** para iniciar reconocimiento de voz.  
+  2. Verás el icono y texto de estado cambiar a “a la escucha”.  
+  3. Habla para ver tu texto transcrito en tiempo real.  
+- Usa la barra inferior para navegar entre **Monitor**, **Historial**, **Contactos** y **Mapa**.
+
+---
+
+## ♻️ Contribuir
+
+1. Haz **fork** del proyecto.  
+2. Crea una rama: `git checkout -b feature/nueva-funcionalidad`.  
+3. Realiza tus cambios y **commit**.  
+4. Abre un **Pull Request** describiendo tu aporte.
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia **MIT**.  
+```
